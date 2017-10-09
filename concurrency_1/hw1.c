@@ -41,6 +41,19 @@ unsigned int get_random_num(void){
         }
 }
 
+struct data_point* producer_producing(struct data_point* data){
+	data->value = get_random_num()%10;
+	data->sleep_time = (get_random_num()%3)+7;
+	return data; 
+}
+
+bool space_available(struct buffer* buf){
+	bool space;
+	if(buf->num >= 31)
+		space = false;
+	else 
+		space = true;
+	return space; 
 
 struct buffer{
 	struct local* first_point;
@@ -141,7 +154,7 @@ int main(int argc, char** argv){
         
 	//User must enter a.out followed by the number of threads//
 	if(argc < 2){
-                printf("Please enter the number of threads when running the program \n");
+                printf(" AYYYPlease enter the number of threads when running the program \n");
                 exit(-1);
         }
 

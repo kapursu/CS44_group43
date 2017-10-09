@@ -1,0 +1,58 @@
+#one way of including source code is to use pygments
+pygmentize -f latex -o __mt19937ar.c __mt19937ar.c hw1.c test.c pthread_hello.c.tex mt19937ar.c __mt19937ar.c hw1.c test.c pthread_hello.c
+Usage: /bin/pygmentize [-l <lexer> | -g] [-F <filter>[:<options>]] [-f <formatter>]
+          [-O <options>] [-P <option=value>] [-o <outfile>] [<infile>]
+
+       /bin/pygmentize -S <style> -f <formatter> [-a <arg>] [-O <options>] [-P <option=value>]
+       /bin/pygmentize -L [<which> ...]
+       /bin/pygmentize -N <filename>
+       /bin/pygmentize -H <type> <name>
+       /bin/pygmentize -h | -V
+
+Highlight the input file and write the result to <outfile>.
+
+If no input file is given, use stdin, if -o is not given, use stdout.
+
+<lexer> is a lexer name (query all lexer names with -L). If -l is not
+given, the lexer is guessed from the extension of the input file name
+(this obviously doesn't work if the input is stdin).  If -g is passed,
+attempt to guess the lexer from the file contents, or pass through as
+plain text if this fails (this can work for stdin).
+
+Likewise, <formatter> is a formatter name, and will be guessed from
+the extension of the output file name. If no output file is given,
+the terminal formatter will be used by default.
+
+With the -O option, you can give the lexer and formatter a comma-
+separated list of options, e.g. ``-O bg=light,python=cool``.
+
+The -P option adds lexer and formatter options like the -O option, but
+you can only give one option per -P. That way, the option value may
+contain commas and equals signs, which it can't with -O, e.g.
+``-P "heading=Pygments, the Python highlighter".
+
+With the -F option, you can add filters to the token stream, you can
+give options in the same way as for -O after a colon (note: there must
+not be spaces around the colon).
+
+The -O, -P and -F options can be given multiple times.
+
+With the -S option, print out style definitions for style <style>
+for formatter <formatter>. The argument given by -a is formatter
+dependent.
+
+The -L option lists lexers, formatters, styles or filters -- set
+`which` to the thing you want to list (e.g. "styles"), or omit it to
+list everything.
+
+The -N option guesses and prints out a lexer name based solely on
+the given filename. It does not take input or highlight anything.
+If no specific lexer can be determined "text" is returned.
+
+The -H option prints detailed help for the object <name> of type <type>,
+where <type> is one of "lexer", "formatter" or "filter".
+
+The -h option prints this help.
+The -V option prints the package version.
+
+make: *** [template.dvi] Error 2
