@@ -13,6 +13,7 @@ unsigned int ecx;
 unsigned int edx;
 unsigned int r;
 
+//pthread and mutex vars
 pthread_mutex_t mymutex;
 pthread_cond_t consumer_condition;
 pthread_cond_t producer_condition;
@@ -20,6 +21,7 @@ int location;
 int num_data_points;
 int i; 
 
+//get random num will genrate num uses asm code in c!//
 unsigned int get_random_num(void){
         char vendor[13];
 
@@ -41,35 +43,46 @@ unsigned int get_random_num(void){
         }
 }
 
+//This struct will store the points created by the producer//
+struct data_point{
+    	int value;
+    	int sleep_time;
+};
+
+//This buffer will hold the items and have fifo implementation// 
+struct buffer{
+	bool open;
+	struct local* first_point;
+	int num;
+	int datapoint; 
+	int spaces_available;
+	int star_at_zer;
+};
+
+//Struct to help with fifo implementation//
+struct local{
+	struct data_point* data;
+	struct local* new_data_point;
+};
+
+//Helper function for producer adding datapoint//
 struct data_point* producer_producing(struct data_point* data){
 	data->value = get_random_num()%10;
 	data->sleep_time = (get_random_num()%3)+7;
 	return data; 
 }
 
+//CHeck if there is space in buffer to produce another item//
 bool space_available(struct buffer* buf){
 	bool space;
 	if(buf->num >= 31)
 		space = false;
 	else 
 		space = true;
-	return space; 
+	return space;
+} 
 
-struct buffer{
-	struct local* first_point;
-	int num;
-};
-
-struct local{
-	struct data_point* data;
-	struct local* new_data_point;
-};
-
-struct data_point{
-    	int value;
-    	int sleep_time;
-};
-
+//CHeck if there are datapoints for the consumer to take//
 bool data_point_to_consume(struct buffer* buf){
 	bool data_points_2_take;
 	if(buf->num < 1)
@@ -80,6 +93,7 @@ bool data_point_to_consume(struct buffer* buf){
 	return data_points_2_take;
 }
 	
+//COnsumer main functionality//
 void* consumer(void* arg)
 {
     	struct buffer* buf = (struct buffer *) arg;
@@ -106,20 +120,6 @@ void* consumer(void* arg)
     	pthread_exit(0);
 }
 
-struct data_point* producer_producing(struct data_point* data){
-	data->value = get_random_num()%10;
-	data->sleep_time = (get_random_num()%3)+7;
-	return data; 
-}
-
-bool space_available(struct buffer* buf){
-	bool space;
-	if(buf->num >= 31)
-		space = false;
-	else 
-		space = true;
-	return space; 
-}
 
 void* producer(void* arg){
 	struct buffer* buf = (struct buffer *) arg;
