@@ -17,7 +17,7 @@ pthread_mutex_t mymutex;
 pthread_cond_t consumer_condition;
 pthread_cond_t producer_condition;
 int location;
-int num_items;
+int num_data_points;
 int i; 
 
 unsigned int get_random_num(void){
@@ -43,28 +43,28 @@ unsigned int get_random_num(void){
 
 
 struct buffer{
-	struct node* first_point;
+	struct local* first_point;
 	int num;
 };
 
-struct node{
-	struct item* data;
-	struct node* next;
+struct local{
+	struct data_point* data;
+	struct local* new_data_point;
 };
 
-struct item{
+struct data_point{
     	int value;
-    	int con_wait;
+    	int sleep_time;
 };
 
-bool item_to_consume(struct buffer* buf){
-	bool items_2_take;
+bool data_point_to_consume(struct buffer* buf){
+	bool data_points_2_take;
 	if(buf->num < 1)
-		items_2_take = false;
+		data_points_2_take = false;
 	else
-		items_2_take = true; 
+		data_points_2_take = true; 
 
-	return items_2_take;
+	return data_points_2_take;
 }
 	
 void* consumer(void* arg)
@@ -73,29 +73,29 @@ void* consumer(void* arg)
 	int i; 
    	for(i = 0; i < RUN_FOR_THIS_MANY_TIMES;){
         	pthread_mutex_lock(&mymutex);
-        	while(!item_to_consume(buf)){
+        	while(!data_point_to_consume(buf)){
            		pthread_cond_wait(&consumer_condition, &mymutex);
         	}
 
-        	struct node* mynode = buf->first_point;
-        	buf->first_point = buf->first_point->next;
+        	struct local* mylocal = buf->first_point;
+        	buf->first_point = buf->first_point->new_data_point;
         	buf->num--;
-        	struct item* temp = mynode->data;
-		free(mynode);
-		struct item* data = temp;
+        	struct data_point* temp = mylocal->data;
+		free(mylocal);
+		struct data_point* data = temp;
        	        printf("Consuming Item:  %d\n", data->value);
 		//unlock mutex and wait time
 		pthread_cond_signal(&producer_condition);
         	pthread_mutex_unlock(&mymutex);
-        	sleep(data->con_wait);
+        	sleep(data->sleep_time);
         	free(data);
     	}
     	pthread_exit(0);
 }
 
-struct item* producer_producing(struct item* data){
+struct data_point* producer_producing(struct data_point* data){
 	data->value = get_random_num()%10;
-	data->con_wait = (get_random_num()%3)+7;
+	data->sleep_time = (get_random_num()%3)+7;
 	return data; 
 }
 
@@ -116,18 +116,18 @@ void* producer(void* arg){
         	while(!space_available(buf)){
             		pthread_cond_wait(&producer_condition, &mymutex);
         	}
-       		struct item* data = malloc(sizeof(struct item));
+       		struct data_point* data = malloc(sizeof(struct data_point));
         	data = producer_producing(data);
 	
-        	struct node* new_node = malloc(sizeof(struct node));
-        	new_node->data = data;
-        	new_node->next = buf->first_point;
-        	buf->first_point = new_node;
+        	struct local* new_local = malloc(sizeof(struct local));
+        	new_local->data = data;
+        	new_local->new_data_point = buf->first_point;
+        	buf->first_point = new_local;
         	buf->num++;
 		
 
 		//unlock mutex and waittime
-		printf("Producing item. Buffer contains %d items \n",buf->num);
+		printf("Producing data_point. Buffer contains %d items \n",buf->num);
 		pthread_cond_signal(&consumer_condition);
 	        pthread_mutex_unlock(&mymutex);
 	        sleep((get_random_num()%5) + 3);
