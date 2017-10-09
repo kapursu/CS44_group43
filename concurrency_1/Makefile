@@ -40,7 +40,10 @@ show: $(TRG)
 showps: $(PSF)
 	@for i in $(PSF) ; do $(GH) $$i & done
 
-all: pdf
+cfile: hw1.c
+	gcc -pthread hw1.c -o hw1
+
+#all: pdf
 
 clean:
 	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg
