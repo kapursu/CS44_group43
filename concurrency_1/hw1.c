@@ -1,3 +1,6 @@
+//Supriya Kapur and Kenon Kahoano
+//CS 444
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
