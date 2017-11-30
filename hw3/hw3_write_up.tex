@@ -1,0 +1,106 @@
+\documentclass[letterpaper,onecolumn,11pt,titlepage]{IEEEtran}
+
+\usepackage[margin=0.75in]{geometry}
+\renewcommand{\familydefault}{\rmdefault}
+
+\usepackage{listings}
+\usepackage{color}
+\usepackage{hyperref}
+
+
+
+\begin{document}
+
+\begin{titlepage}
+\title{Operating Systems II, Assignment 3}
+\author
+{\IEEEauthorblockN{Supriya Kapur and Kenon Kahoano\\
+Group 43}
+\IEEEauthorblockA{
+CS 444\\
+Fall 2017\\
+}}
+        \maketitle
+        \vspace{4cm}
+        \begin{abstract}
+        \noindent In this document we discuss how we went about designing a RAM disk driver device for our Linux Kernel which allocates a chunk of memory and presents it as a block device. We explain our design plan in which we discuss how we planned on utilizing the Linux Kernel's Crypto API to add encryption to our block device in a manner that encrypts and decrypts data when it is both written and read.
+
+        \end{abstract}
+
+\end{titlepage}
+
+\newpage
+
+\section{Design Plan}
+\par Before starting to code our disk driver we first had to research the Linux Crypto API. Using provide online materials like: \href{https://lwn.net/Kernel/LDD3/}{LDD3} as well as personal research we tried to gain a better understanding of the Linux Crypto API. We also made sure to review the assignment page to ensure that we had a strong understanding of what was required for this assignment. The LDD3 was a valuable resource for us as it gave us suggestions of different options that we could use to debug our Disk Driver. We chose to utilize print statements as it allowed for us to know exactly where a problem occurred base on the given statement. We also took time to research the Simple Block Driver file and used that as a base for our assignment. While the initial one we found was based off an older kernel, specifically the 2.6.31 version of the kernel we were able to find sources that informed us of what API's needed to be updated.
+
+\section{Questions}
+\subsection{What do you think the main point of this assignment is?}
+\par The main point of this assignment was to learned about the process of encrypting and decrypting of a block device. This assignment also gave us more exposure in working with the Kernel and with that learning how to look at code that worked for older versions of the kernel and updating them to work on a new version.
+
+
+\subsection{How did you personally approach the problem? Design decisions, algorithm, etc.}
+\par The way we approached this problem was first gaining a better understanding of what exactly the assignment entailed. This involved reviewing the assignment page as well as researching some of the aspects of this assignment. We then utilized a sample block driver file that allowed us to then tinker with that until we reached the given solution. By utilizing a sample file we were able to have a disk driver that worked that we could revert back to if we ever got stuck.
+
+
+\subsection{How did you ensure your solution was correct? Testing details, for instance.}
+\par To ensure our solution was correct we utilized print statements. These statements would tell us where things went wrong and allowed us to review our code in those areas. We also used the print statements to ensure the data was being encrypted and then decrypted as we had the raw data printed to the screen both before and after the encryption process. If there was something that changed in between those two print statements we were able to see that.
+
+\par The TA can test our solution using the following commands:
+\begin{itemize}
+\item download the linux yacto repo, checkout the correct version (v3.19.2), and apply the patch file.
+\item source the correct environment.
+\item Copy both the core file and the config file from /files into your linux-yacto folder. Save the config file as .config
+\item Using menuconfig, add the driver as a module. It should be one of the first few options, and has hw 3 in the description. You will get to this by going to device drivers, then block drivers, then setting the new module using M.
+\item Do a make all.
+\item Run the qemu command: qemu-system-i386 -gdb tcp::???? -S -nographic -kernel arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug" where ???? represents the port you are using.
+\item In a second window, run GDB, set the target remote as your port, and type continue.
+\item Log in using using root, and go to the root directory by typing cd.
+\item Copy in the module using scp. The module is called block\_cypher.ko .
+\item Get it running by typing insmod block\_cypher.ko , and create an ext2 file directory using mkfs.ext2 /dev/block\_cypher0.
+\item Now you will need to make a new directory and mount it. This can be done via mkdir /dir and mount /dev/block\_cypher0 /dir .
+\item Testing can now occur. Echo text into a new file and then grep to see if you can find it. If nothing comes up, then it works! For example, echo "Hello World" > /dir/testing , and then grep -a "Hello World" /dev/block\_cypher0 . This should turn up nothing.
+\end{itemize}
+
+\subsection{What did you learn?}
+\par One of the things we learned is how to take existing documentation that works for previous kernels and updating them to work on our given kernel. We also learned about how to implement the encryption and decryption process through the use of the Linux Kernel Crypto API.
+
+
+
+
+\section{Version Control Log}
+\begin{tabular}{lll} \textbf{Commit} & \textbf{Details} & \textbf{Author}
+
+\\ \hline
+f445321&First Commit&Supriya Kapur\\ \hline
+fe4ee15&Delete test.c&Supriya Kapur\\ \hline
+a23918f&Clean up file folder&Supriya Kapur\\ \hline
+425cb92&Working kernal with files in folder&Supriya Kapur\\ \hline
+c53f39f&Merge branch 'master'&Supriya Kapur\\ \hline
+78e2a6c&Working Kernal&Supriya Kapur\\ \hline
+3954a13&Updated Makefile&Supriya Kapur\\ \hline
+c7705b3&Working fifo stack&Supriya Kapur\\ \hline
+bcdf6cd&pthread locking and unlocking&Supriya Kapur\\ \hline
+55e8169&working consumer producer&Supriya Kapur\\ \hline
+34beb99&final write up done&Supriya Kapur\\ \hline
+\end{tabular}
+
+\par
+
+%\newpage
+\section{Work log}
+\par
+\begin{itemize}
+\item 10/2 Met with each other and discussed plan for the week regarding assignment.
+\item 10/3 Met after capstone class to work on getting Qemu to properly boot. Also discussed concurrency portion more indepth.
+\item 10/4 Worked on conurrency portion seperately
+\item 10/5 Worked on concurrency portion seperately.
+\item 10/6 Met together to check on concurrency status as well as discussing write up portion of assignment.
+\item 10/7 Worked on write up responses.
+\item 10/8 Added respsonses to tex file.
+\item 10/9 Finalized report, ensure formatting was correct, and reviewed responses
+\end{itemize}
+
+\end{document}
+
+

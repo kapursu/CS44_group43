@@ -1,0 +1,91 @@
+\documentclass[onecolumn, draftclsnofoot,10pt, compsoc]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{setspace}
+\usepackage{scrextend}
+\usepackage[colorlinks = true,
+            linkcolor = black,
+            urlcolor  = blue]{hyperref}
+\usepackage{geometry}
+\geometry{textheight=9.5in, textwidth=7in}
+
+% 1. Fill in these details
+\def \TeamNumber{		43}
+\def \GroupMemberOne{			Kenon Kahoano}
+\def \GroupMemberTwo{			Supriya Kapur}
+\def \ProjectName{		Assignment 3}
+
+
+% 2. Uncomment the appropriate line below so that the document type works
+
+			
+\newcommand{\NameSigPair}[1]{\par
+\makebox[2.75in][r]{#1} \hfil 	\makebox[3.25in]{\makebox[2.25in]{\hrulefill} \hfill		\makebox[.75in]{\hrulefill}}
+\par\vspace{-12pt} \textit{\tiny\noindent
+\makebox[2.75in]{} \hfil		\makebox[3.25in]{\makebox[2.25in][r]{Signature} \hfill	\makebox[.75in][r]{Date}}}}
+% 3. If the document is not to be signed, uncomment the RENEWcommand below
+\renewcommand{\NameSigPair}[1]{#1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\begin{titlepage}
+    \pagenumbering{gobble}
+    \begin{singlespace} 
+        \par\vspace{.2in}
+        \centering
+        \scshape{
+            \huge CS 444 \par
+            {\large\today}\par
+            \vspace{.5in}
+            \textbf{\Huge\ProjectName}\par
+            \vfill
+            {\large Prepared by }\par
+            Group\TeamNumber\par
+            % 5. comment out the line below this one if you do not wish to name your team
+            {\Large
+                \NameSigPair{\GroupMemberOne}\par
+                \NameSigPair{\GroupMemberTwo}\par
+            }
+            \vspace{20pt}
+        }
+        \begin{abstract}
+        % 6. Fill in your abstract    
+	In this document we discuss how we went about designing a RAM disk driver device for our Linux Kernel which allocates a chunk of memory and presents it as a block device. We explain our design plan in which we discuss how we planned on utilizing the Linux Kernel's Crypto API to add encryption to our block device in a manner that encrypts and decrypts data when it is both written and read.
+            
+        \end{abstract}     
+    \end{singlespace}
+\end{titlepage}
+\newpage
+\pagenumbering{arabic}
+%\tableofcontents
+% 7. uncomment this (if applicable). Consider adding a page break.
+%\listoffigures
+%\listoftables
+\clearpage
+
+% 8. now you write!
+
+\section{Design Plan}
+Before starting to code our disk driver we first had to research the Linux Crypto API. Using provide online materials like: \href{https://lwn.net/Kernel/LDD3/}{LDD3} as well as personal research we tried to gain a better understanding of the Linux Crypto API. We also made sure to review the assignment page to ensure that we had a strong understanding of what was required for this assignment. The LDD3 was a valuable resource for us as it gave us suggestions of different options that we could use to debug our Disk Driver. We chose to utilize print statements as it allowed for us to know exactly where a problem occurred base on the given statement. We also took time to research the Simple Block Driver file and used that as a base for our assignment. While the initial one we found was based off an older kernel, specifically the 2.6.31 version of the kernel we were able to find sources that informed us of what API's needed to be updated.
+
+\section{Verson Control Log}
+
+\section{Work Log}
+\section{Questions}
+
+\subsection{What do you think the main point of this assignment is?}
+The main point of this assignment was to learned about the process of encrypting and decrypting of a block device. This assignment also gave us more exposure in working with the Kernel and with that learning how to look at code that worked for older versions of the kernel and updating them to work on a new version.
+
+
+\subsection{How did you personally approach the problem? Design decisions, algorithm, etc.}
+The way we approached this problem was first gaining a better understanding of what exactly the assignment entailed. This involved reviewing the assignment page as well as researching some of the aspects of this assignment. We then utilized a sample block driver file that allowed us to then tinker with that until we reached the given solution. By utilizing a sample file we were able to have a disk driver that worked that we could revert back to if we ever got stuck.
+
+
+\subsection{How did you ensure your solution was correct? Testing details, for instance.}
+To ensure our solution was correct we utilized print statements. These statements would tell us where things went wrong and allowed us to review our code in those areas. We also used the print statements to ensure the data was being encrypted and then decrypted as we had the raw data printed to the screen both before and after the encryption process. If there was something that changed in between those two print statements we were able to see that.
+
+
+\subsection{What did you learn?}
+One of the things we learned is how to take existing documentation that works for previous kernels and updating them to work on our given kernel. We also learned about how to implement the encryption and decryption process through the use of the Linux Kernel Crypto API.
+
+\end{document}

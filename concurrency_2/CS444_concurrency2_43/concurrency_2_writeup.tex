@@ -1,0 +1,52 @@
+\documentclass[onecolumn,letterpaper,10pt]{IEEEtran}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{longtable}
+\geometry{letterpaper, margin=.75in}
+\newcommand\tab[1][1cm]{\hspace*{#1}}
+
+\usepackage{titling}
+
+\title{CS444 - Operating Systems II
+	\\Fall 2017
+	\\Concurrency Problem 2
+}
+\author{Supriya Kapur and Kenon Kahoano\\
+	\small{\(kapursu@oregonstate.edu, kahoanok@oregonstate.edu\)}
+}
+
+\begin{document}
+
+\begin{titlingpage}
+    \maketitle
+    \begin{abstract}
+	\noindent This document will describe how a solution to the dining philosophers problem coded in \texttt{C} can be run and tested for correctness.  
+    \end{abstract}
+\end{titlingpage}
+
+\section{Compiling and Running}
+\par In order to compile the code as well as the tex document, simple run \texttt{make}. This will create an executable file, \texttt{concurrency\_2}, which can be ran with \texttt{./concurrency\_2}. Running make will also create a pdf version of the write up \texttt(.tex) file that can be viewed. 
+
+\section{Testing}
+\par The solution can be tested simply be running the program because of the print statements put in the \texttt{C} code. For example, when a philosopher picks ups forks, a statement will be printed of the forks they are picking up, the amount of time they are eating for, when the put down their forks, and how long they are thinking for. Examining these statements while the programming is running will prove the correctness of the program. 
+
+\par An example of the program running with print statements to ensure correctness is as follows: \\
+
+\texttt{Plato is going to think for 2 seconds.\\
+Confucius is going to think for 6 seconds. \\
+Hume is going to think for 20 seconds. \\
+Aristotle is going to think for 13 seconds.\\ 
+Kant is going to think for 13 seconds. \\
+Plato is picking up fork 2. \\
+Plato is picking up fork 3.  \\
+Plato is going to eat for 6 seconds.\\ 
+Confucius is picking up fork 3. \\
+Plato is putting down their forks.\\ 
+Plato is going to think for 5 seconds.\\ 
+Confucius is picking up fork 4.  \\
+Confucius is going to eat for 3 seconds.}
+
+
+\end{document}
+
+

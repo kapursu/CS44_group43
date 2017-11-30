@@ -1,0 +1,174 @@
+\documentclass[letterpaper,onecolumn,10pt,titlepage]{IEEEtran}
+
+\usepackage[margin=0.75in]{geometry}
+\renewcommand{\familydefault}{\rmdefault}
+
+\usepackage{listings}
+\usepackage{color}
+\usepackage{hyperref}
+
+
+
+\begin{document}
+
+\begin{titlepage}
+\title{Operating Systems II, Assignment 1}
+\author
+{\IEEEauthorblockN{Supriya Kapur and Kenon Kahoano\\
+Group 43}
+\IEEEauthorblockA{
+CS 444\\
+Fall 2017\\
+}}
+	\maketitle
+	\vspace{4cm}
+	\begin{abstract}
+		\noindent In this document, we will discuss how to create a kernal on the os2.engr.oregonstate.edu server. Additionally, we will discusss a pthread solution to the producer-consumer concurrency problem, including implementation details and a discussion about the reason for the assingment.\\
+	\end{abstract}
+	
+\end{titlepage}
+
+\newpage
+
+\section{Command log}
+\par
+%input the pygmentized output of mt19937ar.c, using a (hopefully) unique name
+The following commands were used to create the kernal.\\
+\par
+Log into the class server:\\ 
+\begin{itemize}
+    \item ssh username@access.engr.oregonstate.edu\\
+    \item ssh username@os2.engr.oregonstate.edu\\
+\end{itemize}
+\par
+Create a group folder and move to the folder:\\
+\begin{itemize}
+    \item mkdir /scratch/fall2017/43/\\
+    \item cd /scratch/fall2017/43\\
+\end{itemize}
+\par
+Source the appropriate environment configuration script:\\
+\begin{itemize}
+    \item bash/zsh: /scratch/opt/environment-setup-i586-poky-linux\\
+    \item tcsh/csh: /scratch/files/environment-setup-i586-poky-linux.csh\\
+\end{itemize}
+\par
+Clone the yocto repository:\\
+\begin{itemize}
+    \item git clone git://git.yoctoproject.org/linux-yocto-3.19\\
+\end{itemize}
+\par
+Checkout the Correct version:\\
+\begin{itemize}
+	\item git checkout v3.19.2\\
+\end{itemize}
+\par
+Copy staring kernel and drive file to group folder:\\
+\begin{itemize}
+    \item cp /scratch/fall2017/files/bzImage-qemux86.bin /scratch/fall2017/43/linux-yocto-3.19\\
+    \item cp /scratch/fall2017/files/core-image-lsb-sdk-qemux86.ext4 /scratch/fall2017/43/linux-yocto-3.19\\
+\end{itemize}
+\par
+Launch Qemu:\\
+\begin{itemize}
+    \item qemu-system-i386 -gdb tcp::5543 -S -nographic -kernel bzImage-qemux86.bin -drive file=core-image-lsb-sdk-qemux86.ext4,if=virtio -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/vda rw console=ttyS0 debug".\\
+\end{itemize}
+\par
+In a seperate window, run GDB:\\
+\begin{itemize}
+\item GDB 5543\\
+\item continue\\
+\item login as "root"\\
+\end{itemize}
+\par
+Build new kernel instance:\\
+\begin{itemize}
+    \item cp /scratch/fall2017/files/config-3.19.2-yocto \$SRC\_ROOT/.config\\
+    \item make -j4 all\\
+\end{itemize}    
+\par
+
+
+%Add the rest of the commands
+
+%\newpage   
+\section{Qemu Command Flags Explanation}
+\par   
+\begin{itemize}
+\item debug: Enable extra debug codepaths.
+\item usb: Enable USB passthrough vid dev-libs/libusb.
+\item no reboot: changes any reset request to a shutdown request.
+\item nographic: disable the default SDL display.
+\item net: Define QEMU networking options.
+\item localtime: syncs clock to the local time of the user.
+\item gdb: Wait for gdb connection on the device.
+\item tcp::: Defines port used for connection.
+\item S: Freeze CPU on startup.
+\item kernel: Defines the kernel image.
+\item drive: Defines the drive to be used.
+\item enable-kvm: Enables KVM full virtualization support.
+\item append: Uses what follows as kernel command line.
+\end{itemize}
+
+%\newpage
+\section{Concurrency Approach}
+\par
+To solve the concurrency consumer-producer problem, we implemented a first in first out stack, where a producer would add an item to the stack and the consumer would then take it out. In order to make sure that the producer and consumer were not accessing the stack at the same time, or during the time they were doing “work”, pthread mutex locks, unlocks, and waiting conditions were implemented. 
+\par
+
+%\newpage
+\section{Assingment Questions}
+\par
+\subsection{What do you think the main point of the assignment is?}
+\par
+The main point of this assignment is to be able to tackle multithreaded programs. In doing this, pthreads had to be used, which allowed a refresher on how to use them and the functionality that they have. Overall, I think this assignment gives a good base for working with pthreads and handling multithreaded programs. 
+\par
+\subsection{How did you persoannly approach the problem?}
+\par
+I tackled this program using as much previous knowledge that I had about handling buffers. I created a first in first out stack, reminiscent of much of what was learned in CS 162. This made my code very readable and intuitive. In order to use pthreads mutex locks in this assignment, I watched many tutorials and how to best implement and use them, and then I merged it with the stack code I had. \\
+\par
+\subsection{How did you ensure your solution was correct? Testing details, for instance.}
+\par
+I ensured that my code was correct my having trace statements throughout the code. I print a message every time an item is added to the buffer along with how many items are in the buffer. When an item is being consumed, I print out a message along with the value it is consuming.\\
+\par
+\subsection{What did you learn?}
+\par 
+In this assignment I learned how to use assembly language in c, something I have never done before, and I learned much more about pthreads. Additionally, my research before starting the assignment gave me insight into how important synchronization is in computing.\\
+\par
+
+%\newpage 
+\section{Version Control Log}
+\begin{tabular}{lll} \textbf{Commit} & \textbf{Details} & \textbf{Author}
+
+\\ \hline
+f445321&First Commit&Supriya Kapur\\ \hline
+fe4ee15&Delete test.c&Supriya Kapur\\ \hline
+a23918f&Clean up file folder&Supriya Kapur\\ \hline
+425cb92&Working kernal with files in folder&Supriya Kapur\\ \hline
+c53f39f&Merge branch 'master'&Supriya Kapur\\ \hline
+78e2a6c&Working Kernal&Supriya Kapur\\ \hline
+3954a13&Updated Makefile&Supriya Kapur\\ \hline
+c7705b3&Working fifo stack&Supriya Kapur\\ \hline
+bcdf6cd&pthread locking and unlocking&Supriya Kapur\\ \hline
+55e8169&working consumer producer&Supriya Kapur\\ \hline
+34beb99&final write up done&Supriya Kapur\\ \hline
+\end{tabular}
+
+\par
+
+%\newpage
+\section{Work log}
+\par
+\begin{itemize}
+\item 10/2 Met with each other and discussed plan for the week regarding assignment.
+\item 10/3 Met after capstone class to work on getting Qemu to properly boot. Also discussed concurrency portion more indepth.
+\item 10/4 Worked on conurrency portion seperately
+\item 10/5 Worked on concurrency portion seperately.
+\item 10/6 Met together to check on concurrency status as well as discussing write up portion of assignment.
+\item 10/7 Worked on write up responses.
+\item 10/8 Added respsonses to tex file.
+\item 10/9 Finalized report, ensure formatting was correct, and reviewed responses
+\end{itemize}
+
+\end{document}
+
