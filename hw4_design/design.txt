@@ -1,0 +1,8 @@
+To implement the best fit algorithm, we will be editing the function slob_page_alloc in mm/slob.c . This is the only file and function that will need to be altered. Our implementation will mirror that found on:https://www.thecrazyprogrammer.com/2017/01/best-fit-algorithm-c-c.html
+Get no. of Processes and no. of blocks.
+After that get the size of each block and process requests.
+Then select the best memory block that can be allocated using the above definition.
+Display the processes with the blocks that are allocated to a respective process.
+Value of Fragmentation is optional to display to keep track of wasted memory.
+Stop.
+
