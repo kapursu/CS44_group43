@@ -1,0 +1,38 @@
+\documentclass[letterpaper,onecolumn,10pt,titlepage]{IEEEtran}
+
+\usepackage[margin=0.75in]{geometry}
+\renewcommand{\familydefault}{\rmdefault}
+
+\usepackage{listings}
+\usepackage{color}
+\usepackage{hyperref}
+
+
+
+\begin{document}
+
+\begin{titlepage}
+\title{Operating Systems II, Assignment 4}
+\author
+{\IEEEauthorblockN{Supriya Kapur and Kenon Kahoano\\
+Group 43}
+\IEEEauthorblockA{
+CS 444\\
+Fall 2017\\
+}}
+	\maketitle	
+	\begin{abstract}
+	 
+	\end{abstract}	
+\end{titlepage}
+
+\newpage
+
+\section{Problem 1}
+\par Problem 1 can be tested by doing a make all and then running problem1 <num threads>, where num\_threads is your specified number of threads for the problem. Once the program is running, you will see print statements of which threads are using the resources are using the resource at a given time. The program will run forever, but you can kill it and see that via the print statements, it can verified that only three threads use the resource at a given time, and all processes are finished before new ones are added. 
+
+\section{Problem 2}
+\par Problem 2 can be tested in the same way. First do a make all command and then the problem can be run by running the executable file that is created. Once the program is running different print statements will begin to pop up. Each statement will indicate whether it is a searcher, inserter, or deleter as well as which thread it is of those type. Different print statements will also show up indicating if things have been added, found, or deleted from the list as well as whether or not a different process is running thus not allowing for a different process to be ran.
+
+\end{document}
+
