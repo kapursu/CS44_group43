@@ -1,17 +1,17 @@
-#include <linux/module.h>
-#include <linux/random.h>
-#include <linux/slob.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 
 int main(void){
-    long free = syscall(353);
-    long total = syscall(354);
-    float actual = ((float) free/ (float) total);
+    long free_mem = syscall(359);
+    long total_mem = syscall(360);
 
-    printf("Free space: %lu\n", free);
-    printf("Total space: %lu\n", total);
-    printf("Actual Memory usage: %f\n", actual);
+    float actual_mem = ((float)free_mem/(float)total_mem);
 
+    printf("Free memory: %l\n", free_mem);
+    printf("Total memory: %l\n", total_mem);
+    printf("Actual memory: %f\n", actual_mem);
+    
     return 0;
 }
