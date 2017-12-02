@@ -1,0 +1,202 @@
+diff --git a/arch/x86/syscalls/syscall_32.tbl b/arch/x86/syscalls/syscall_32.tbl
+index b3560ec..450eacd 100644
+--- a/arch/x86/syscalls/syscall_32.tbl
++++ b/arch/x86/syscalls/syscall_32.tbl
+@@ -365,3 +365,5 @@
+ 356	i386	memfd_create		sys_memfd_create
+ 357	i386	bpf			sys_bpf
+ 358	i386	execveat		sys_execveat			stub32_execveat
++359	i386	slob_free		sys_slob_free
++360	i386	slob_used		sys_slob_used
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 85893d7..bc563b1 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -882,4 +882,6 @@ asmlinkage long sys_execveat(int dfd, const char __user *filename,
+ 			const char __user *const __user *argv,
+ 			const char __user *const __user *envp, int flags);
+ 
++asmlinkage long sys_slob_free(void)
++asmlinkage long sys_slob_used(void)
+ #endif
+diff --git a/mm/slob.c b/mm/slob.c
+index 96a8620..03767a2 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -72,6 +72,10 @@
+ 
+ #include <linux/atomic.h>
+ 
++
++#include <linux/syscalls.h>
++#include <linux/linkage.h>
++
+ #include "slab.h"
+ /*
+  * slob_block has a field 'units', which indicates size of block if +ve,
+@@ -214,10 +218,17 @@ static void slob_free_pages(void *b, int order)
+ /*
+  * Allocate a slob block within a given slob_page sp.
+  */
++
++//This function will now implement the best fit algorithm. 
+ static void *slob_page_alloc(struct page *sp, size_t size, int align)
+ {
+ 	slob_t *prev, *cur, *aligned = NULL;
+ 	int delta = 0, units = SLOB_UNITS(size);
++	slob_t *best_fit = NULL; 
++	slob_t *best_fit_next = NULL; 
++	slot_t *best_fit_prev = NULL; 
++	int best_fit_units = SLOB_UNITS(size);
++
+ 
+ 	for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
+ 		slobidx_t avail = slob_units(cur);
+@@ -226,40 +237,50 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
+ 			aligned = (slob_t *)ALIGN((unsigned long)cur, align);
+ 			delta = aligned - cur;
+ 		}
+-		if (avail >= units + delta) { /* room enough? */
+-			slob_t *next;
+-
+-			if (delta) { /* need to fragment head to align? */
+-				next = slob_next(cur);
+-				set_slob(aligned, avail - delta, next);
+-				set_slob(cur, delta, aligned);
+-				prev = cur;
+-				cur = aligned;
+-				avail = slob_units(cur);
+-			}
+-
+-			next = slob_next(cur);
+-			if (avail == units) { /* exact fit? unlink. */
+-				if (prev)
+-					set_slob(prev, slob_units(prev), next);
+-				else
+-					sp->freelist = next;
+-			} else { /* fragment */
+-				if (prev)
+-					set_slob(prev, slob_units(prev), cur + units);
+-				else
+-					sp->freelist = cur + units;
+-				set_slob(cur + units, avail - units, next);
+-			}
+-
+-			sp->units -= units;
+-			if (!sp->units)
+-				clear_slob_page_free(sp);
+-			return cur;
++		if ((avail >= units + delta) && ((avail - (units + delta) < best_fit_units) ||best_fit == NULL)){ /* room enough? */
++			best_fit_units = avail - (units + delta); 
++			best_fit_prev = prev;
++			//slob_t *next;
++			best_fit = cur; 
+ 		}
+-		if (slob_last(cur))
+-			return NULL;
++		if(slob_last(cur)){
++			break; 
++		}
++	}
++	if(best_fit !=NULL){	
++		avail=slob_units(best_fit);
++		aligned = (slob_t *)ALIGN((unsigned long)best_fit, align);
++		delta = aligned - best; 
++
++		if (delta) { /* need to fragment head to align? */
++			best_fit_next = slob_next(best_fit);
++			set_slob(aligned, avail - delta, best_fit_next);
++			set_slob(best_fit, delta, aligned);
++			best_fit_prev = cur;
++			best_fit = aligned;
++			avail = slob_units(best_fit);
++		}
++
++		best_fit_next = slob_next(best_fit);
++		if (avail == units) { /* exact fit? unlink. */
++			if (best_fit_prev)
++				set_slob(best_fit_prev, slob_units(best_fit_prev), best_fit_next);
++			else
++				sp->freelist = best_fit_next;
++		} else { /* fragment */
++			if (best_fit_prev)
++				set_slob(best_fit_prev, slob_units(best_fit_prev), best_fit + units);
++			else
++				sp->freelist = best_fit + units;
++			set_slob(best_fit + units, avail - units, best_fit_next);
++		}
++
++		sp->units -= units;
++		if (!sp->units)
++			clear_slob_page_free(sp);
++		return best_fit;
+ 	}
++	return NULL;
+ }
+ 
+ /*
+@@ -370,8 +391,8 @@ static void slob_free(void *block, int size)
+ 		sp->units = units;
+ 		sp->freelist = b;
+ 		set_slob(b, units,
+-			(void *)((unsigned long)(b +
+-					SLOB_UNITS(PAGE_SIZE)) & PAGE_MASK));
++				(void *)((unsigned long)(b +
++						SLOB_UNITS(PAGE_SIZE)) & PAGE_MASK));
+ 		if (size < SLOB_BREAK1)
+ 			slob_list = &free_slob_small;
+ 		else if (size < SLOB_BREAK2)
+@@ -423,7 +444,7 @@ out:
+  * End of slob allocator proper. Begin kmem_cache_alloc and kmalloc frontend.
+  */
+ 
+-static __always_inline void *
++	static __always_inline void *
+ __do_kmalloc_node(size_t size, gfp_t gfp, int node, unsigned long caller)
+ {
+ 	unsigned int *m;
+@@ -446,7 +467,7 @@ __do_kmalloc_node(size_t size, gfp_t gfp, int node, unsigned long caller)
+ 		ret = (void *)m + align;
+ 
+ 		trace_kmalloc_node(caller, ret,
+-				   size, size + align, gfp, node);
++				size, size + align, gfp, node);
+ 	} else {
+ 		unsigned int order = get_order(size);
+ 
+@@ -455,7 +476,7 @@ __do_kmalloc_node(size_t size, gfp_t gfp, int node, unsigned long caller)
+ 		ret = slob_new_pages(gfp, order, node);
+ 
+ 		trace_kmalloc_node(caller, ret,
+-				   size, PAGE_SIZE << order, gfp, node);
++				size, PAGE_SIZE << order, gfp, node);
+ 	}
+ 
+ 	kmemleak_alloc(ret, size, 1, gfp);
+@@ -475,7 +496,7 @@ void *__kmalloc_track_caller(size_t size, gfp_t gfp, unsigned long caller)
+ 
+ #ifdef CONFIG_NUMA
+ void *__kmalloc_node_track_caller(size_t size, gfp_t gfp,
+-					int node, unsigned long caller)
++		int node, unsigned long caller)
+ {
+ 	return __do_kmalloc_node(size, gfp, node, caller);
+ }
+@@ -543,13 +564,13 @@ void *slob_alloc_node(struct kmem_cache *c, gfp_t flags, int node)
+ 	if (c->size < PAGE_SIZE) {
+ 		b = slob_alloc(c->size, flags, c->align, node);
+ 		trace_kmem_cache_alloc_node(_RET_IP_, b, c->object_size,
+-					    SLOB_UNITS(c->size) * SLOB_UNIT,
+-					    flags, node);
++				SLOB_UNITS(c->size) * SLOB_UNIT,
++				flags, node);
+ 	} else {
+ 		b = slob_new_pages(flags, get_order(c->size), node);
+ 		trace_kmem_cache_alloc_node(_RET_IP_, b, c->object_size,
+-					    PAGE_SIZE << get_order(c->size),
+-					    flags, node);
++				PAGE_SIZE << get_order(c->size),
++				flags, node);
+ 	}
+ 
+ 	if (b && c->ctor)
